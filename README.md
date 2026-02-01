@@ -123,26 +123,6 @@ Refer to the individual scripts in `src/` for supported CLI flags and options.
 - If faces are not detected reliably, try the Haar detector in `src/haar.py` or adjust detection thresholds.
 - For poor recognition accuracy, check alignment and ensure enrollment images are high-quality and frontal.
 
-## Contributing
-
-1. Fork the repo and create a feature branch.
-2. Add tests or a demonstration script if adding new functionality.
-3. Open a pull request with a clear description of changes.
-
-## Attribution & References
-
-- ArcFace: InsightFace / ArcFace papers and official implementations inspired the embedding approach.
-- This project uses an ONNX version of an ArcFace embedder for portability.
-
-
----
-
-If you'd like, I can also:
-- Add a `requirements.txt` with pinned packages.
-- Expand individual `src/` README notes with usage examples per script.
-- Add a sample `examples/` directory with enrollment and recognition demos.
-
-Updated: project README
 
 
 
