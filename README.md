@@ -1,5 +1,5 @@
 
-# ARCFACE ONNX — Face Recognition with ArcFace Embeddings
+# ARCFACE ONNX — Face Locking
 
 High-performance face recognition project using an ArcFace ONNX embedder and lightweight Python tooling to detect, align, enroll, and recognize faces. Designed for offline, local use with simple scripts for enrollment, recognition, and evaluation.
 
@@ -25,6 +25,39 @@ High-performance face recognition project using an ArcFace ONNX embedder and lig
 - `book/` — dataset and enrollment storage
 	- `db/face_db.json`, `db/face_db.npz` — enrolled identities and embeddings
 	- `enroll/` — folders containing enrolled face images per identity
+- `data/` — ancillary data (if used)
+
+## Requirements
+
+- Python 3.8+ (Windows supported)
+````markdown
+
+# ARCFACE ONNX — Face Locking (Face-Based Lock/Unlock Toolkit)
+
+Face-locking toolkit using ArcFace ONNX embeddings to enable local, offline face-based locking and access control. Provides detection, alignment, enrollment, and real-time recognition for device or application lock/unlock workflows, with scripts and helpers (see `src/face_locking.py`) for integration into live capture or service pipelines.
+
+## Key Features
+- ONNX ArcFace embedding model (`models/embedder_arcface.onnx`) for fast, device-agnostic embedding extraction.
+- Face detection, alignment, and landmarks utilities.
+- Enrollment pipeline to build a searchable face database (`book/db/face_db.*`).
+- Recognition script for live or recorded input and face-locking helpers.
+- Evaluation tools to measure accuracy on enrolled datasets.
+
+## Repository Structure
+
+- `models/` — ONNX model(s) used for embedding extraction.
+- `src/` — Main Python scripts and modules:
+  - `align.py`, `landmarks.py` — face alignment and landmark utilities
+  - `detect.py`, `haar.py` — face detectors
+  - `enroll.py` — enroll identities into the face DB
+  - `recognize.py` — run recognition (camera or image)
+  - `evaluate.py` — evaluation utilities
+  - `camera.py`, `face_locking.py` — helpers for live capture and locking
+  - `ambed.py` — embedding helper utilities
+  - `README.md` — module-level notes
+- `book/` — dataset and enrollment storage
+  - `db/face_db.json`, `db/face_db.npz` — enrolled identities and embeddings
+  - `enroll/` — folders containing enrolled face images per identity
 - `data/` — ancillary data (if used)
 
 ## Requirements
@@ -70,14 +103,14 @@ Refer to the individual scripts in `src/` for supported CLI flags and options.
 ## Typical Workflows
 
 - Enroll new person:
-	- Add images to `book/enroll/<PersonName>/`
-	- Run `python src/enroll.py --input book/enroll/<PersonName> --name <PersonName>`
+  - Add images to `book/enroll/<PersonName>/`
+  - Run `python src/enroll.py --input book/enroll/<PersonName> --name <PersonName>`
 
 - Recognize from a camera or video file:
-	- `python src/recognize.py --db book/db/face_db.npz --model models/embedder_arcface.onnx --source 0`
+  - `python src/recognize.py --db book/db/face_db.npz --model models/embedder_arcface.onnx --source 0`
 
 - Rebuild database from enroll directory (batch enroll):
-	- `python src/enroll.py --input book/enroll --batch --model models/embedder_arcface.onnx`
+  - `python src/enroll.py --input book/enroll --batch --model models/embedder_arcface.onnx`
 
 ## Implementation Notes
 
@@ -101,9 +134,6 @@ Refer to the individual scripts in `src/` for supported CLI flags and options.
 - ArcFace: InsightFace / ArcFace papers and official implementations inspired the embedding approach.
 - This project uses an ONNX version of an ArcFace embedder for portability.
 
-## License
-
-Specify your preferred license here (e.g., MIT). If you want me to add a LICENSE file, tell me which license to use and I will add it.
 
 ---
 
@@ -113,3 +143,8 @@ If you'd like, I can also:
 - Add a sample `examples/` directory with enrollment and recognition demos.
 
 Updated: project README
+
+
+
+
+
