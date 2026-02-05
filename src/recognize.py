@@ -8,9 +8,10 @@ import cv2
 import numpy as np
 import mediapipe as mp
 
-from align import align_face
-from embed import ArcFaceEmbedder
-from evaluate import load_database, match
+from src.align import align
+from src.embed import ArcFaceEmbedder
+
+from src.evaluate import load_database, match
 
 
 IDX = [33, 263, 1, 61, 291]

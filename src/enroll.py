@@ -9,82 +9,69 @@ Face enrollment:
 
 import cv2
 import os
+import json
 import numpy as np
-import mediapipe as mp
-
-from align import align_face
-from embed import ArcFaceEmbedder
-
-
-DATA_DIR = "data/enroll"
-IDX = [33, 263, 1, 61, 291]
+from src.embed import ArcFaceEmbedder
+from src.detect import detect_faces
+from src.align import align_face
 
 
-def enroll(person_name, samples=10):
-    os.makedirs(DATA_DIR, exist_ok=True)
-    person_dir = os.path.join(DATA_DIR, person_name)
-    os.makedirs(person_dir, exist_ok=True)
+DB_DIR = "book/db"
+NPZ_PATH = os.path.join(DB_DIR, "face_db.npz")
+JSON_PATH = os.path.join(DB_DIR, "face_db.json")
 
+def enroll_from_camera(name, num_samples=20):
+    os.makedirs(DB_DIR, exist_ok=True)
+
+    embedder = ArcFaceEmbedder("models/embedder_arcface.onnx")
     cap = cv2.VideoCapture(0)
-    mp_face = mp.solutions.face_mesh.FaceMesh(
-        max_num_faces=1,
-        refine_landmarks=True
-    )
-    embedder = ArcFaceEmbedder()
 
-    count = 0
-    print(f"Enrolling '{person_name}' — press SPACE to capture")
+    embeddings = []
+    print("[INFO] Press SPACE to capture face | ESC to quit")
 
-    while count < samples:
-        ok, frame = cap.read()
-        if not ok:
+    while len(embeddings) < num_samples:
+        ret, frame = cap.read()
+        if not ret:
             break
 
-        H, W = frame.shape[:2]
-        res = mp_face.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        faces = detect_faces(frame)
 
-        if res.multi_face_landmarks:
-            lm = res.multi_face_landmarks[0].landmark
-            pts = np.array([[lm[i].x * W, lm[i].y * H] for i in IDX], dtype=np.float32)
+        for face in faces:
+            aligned = align_face(frame, face)
+            emb = embedder.get_embedding(aligned)
+            embeddings.append(emb)
 
-            if pts[0, 0] > pts[1, 0]:
-                pts[[0, 1]] = pts[[1, 0]]
-            if pts[3, 0] > pts[4, 0]:
-                pts[[3, 4]] = pts[[4, 3]]
+            print(f"[INFO] Captured {len(embeddings)}/{num_samples}")
+            break
 
-            aligned = align_face(frame, pts)
+        cv2.imshow("Enroll Face", frame)
+        key = cv2.waitKey(1)
 
-            cv2.imshow("Aligned", aligned)
-            cv2.putText(
-                frame,
-                f"{count}/{samples}",
-                (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (0, 255, 0),
-                2
-            )
-
-        cv2.imshow("Enroll", frame)
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == 32 and res.multi_face_landmarks:
-            emb = embedder.embed(aligned)
-            np.save(
-                os.path.join(person_dir, f"{count}.npy"),
-                emb
-            )
-            print(f"Saved sample {count}")
-            count += 1
-
-        elif key == ord("q"):
+        if key == 27:  # ESC
             break
 
     cap.release()
     cv2.destroyAllWindows()
-    print("Enrollment complete.")
 
+    embeddings = np.array(embeddings)
+
+    # Load existing DB
+    if os.path.exists(NPZ_PATH):
+        data = np.load(NPZ_PATH, allow_pickle=True)
+        db_embeddings = dict(data)
+    else:
+        db_embeddings = {}
+
+    db_embeddings[name] = embeddings
+
+    np.savez(NPZ_PATH, **db_embeddings)
+
+    # Save metadata
+    with open(JSON_PATH, "w") as f:
+        json.dump({k: len(v) for k, v in db_embeddings.items()}, f, indent=2)
+
+    print("[SUCCESS] Enrollment completed!")
 
 if __name__ == "__main__":
-    name = input("Enter person name: ").strip()
-    enroll(name)
+    person_name = input("Enter your name: ")
+    enroll_from_camera(person_name)
